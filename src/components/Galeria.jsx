@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 
 const accessKey = 'Qhf5Uh8E7PAkUUCcDErcUZi8rOzHp1X_R3Zx9JpCHus';
 
@@ -8,7 +8,8 @@ function Galeria({ termoBusca }) {
     const [carregando, setCarregando] = useState(false);
     const [pagina, setPagina] = useState(1);
 
-    async function buscarImagens(termo, page = 1) {
+    // 1. Envolvemos a função em useCallback para que ela não seja recriada em todo render
+    const buscarImagens = useCallback(async (termo, page = 1) => {
         setCarregando(true);
         try {
             const res = await fetch(
@@ -25,20 +26,20 @@ function Galeria({ termoBusca }) {
         } finally {
             setCarregando(false);
         }
-    }
+    }, []); // Array vazio pois não depende de outros estados internos aqui
 
     // Quando o termo de busca mudar
     useEffect(() => {
         setPagina(1);
         buscarImagens(termoBusca, 1);
-    }, [termoBusca]);
+    }, [termoBusca, buscarImagens]); // Adicionado buscarImagens como dependência
 
     // Quando a página mudar
     useEffect(() => {
         if (pagina !== 1) {
             buscarImagens(termoBusca, pagina);
         }
-    }, [pagina]);
+    }, [pagina, termoBusca, buscarImagens]); // Adicionado termoBusca e buscarImagens
 
     // Scroll infinito
     useEffect(() => {
